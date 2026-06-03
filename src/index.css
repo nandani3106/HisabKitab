@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme {
+  --color-dark-navy: #1D1A39;
+  --color-deep-purple: #451952;
+  --color-purple-rose: #662549;
+  --color-rose-pink: #AE445A;
+  --color-peach-orange: #F39F5A;
+  --color-light-blush: #E8BCB9;
+}
+
+/* Global root font-size scaling to increase text sizes globally */
+html, body {
+  font-size: 18px;
+}
+
+/* Make native calendar input picker icon white in dark mode */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Floating Coins Keyframes */
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: inherit;
+  }
+  90% {
+    opacity: inherit;
+  }
+  100% {
+    transform: translateY(-110vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.animate-float {
+  animation: floatUp linear infinite;
+}
