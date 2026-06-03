@@ -1,12 +1,36 @@
 @import "tailwindcss";
 
+:root {
+  --dark-navy: #302F38;       /* Dark Charcoal Purple */
+  --deep-purple: #2F3A6E;     /* Deep Indigo Blue */
+  --purple-rose: #7174B9;     /* Muted Lavender Blue */
+  --rose-pink: #ABC4E6;       /* Soft Powder Blue */
+  --peach-orange: #C0CDE6;    /* Light Blue Gray */
+  --light-blush: #C0CDE6;     /* Light Blue Gray */
+  --white-color: #FAFDFD;     /* Off White text */
+}
+
+.light {
+  --dark-navy: #FAFDFD;       /* Off White background */
+  --deep-purple: #C0CDE6;     /* Light Blue Gray card */
+  --purple-rose: #ABC4E6;     /* Soft Powder Blue border */
+  --rose-pink: #2F3A6E;       /* Deep Indigo Blue primary */
+  --peach-orange: #7174B9;    /* Muted Lavender Blue secondary */
+  --light-blush: #2F3A6E;     /* Deep Indigo Blue text */
+  --white-color: #302F38;     /* Dark Charcoal Purple text */
+}
+
 @theme {
-  --color-dark-navy: #1D1A39;
-  --color-deep-purple: #451952;
-  --color-purple-rose: #662549;
-  --color-rose-pink: #AE445A;
-  --color-peach-orange: #F39F5A;
-  --color-light-blush: #E8BCB9;
+  --color-dark-navy: var(--dark-navy);
+  --color-deep-purple: var(--deep-purple);
+  --color-purple-rose: var(--purple-rose);
+  --color-rose-pink: var(--rose-pink);
+  --color-peach-orange: var(--peach-orange);
+  --color-light-blush: var(--light-blush);
+  --color-white: var(--white-color);
+  --color-off-white: #FAFDFD;
+  --color-soft-mint: #62CFBC;
+  --color-light-mint: #8CDBCC;
 }
 
 /* Global root font-size scaling to increase text sizes globally */
@@ -14,12 +38,17 @@ html, body {
   font-size: 18px;
 }
 
-/* Make native calendar input picker icon white in dark mode */
+/* Make native calendar input picker icon color dynamic */
 input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1);
   cursor: pointer;
   opacity: 0.8;
   transition: opacity 0.2s ease;
+}
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+.light input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.2);
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator:hover {
@@ -46,4 +75,81 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
 .animate-float {
   animation: floatUp linear infinite;
+}
+
+/* Wood Plank Wall Background */
+.plank-wall {
+  background-color: #888bc2;
+  background-image: 
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 78px,
+      rgba(255, 255, 255, 0.22) 78px,
+      rgba(255, 255, 255, 0.22) 80px
+    ),
+    linear-gradient(to right, rgba(0,0,0,0.04), transparent 10%, transparent 90%, rgba(0,0,0,0.06));
+  background-size: 80px 100%;
+}
+
+/* Soothing Gradient Card */
+.wooden-board {
+  background: linear-gradient(135deg, #4b3f6e 0%, #30284d 100%);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.08), 
+    0 10px 20px -5px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(113, 116, 185, 0.35);
+  border-radius: 18px;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Cat entrance sitting animation */
+@keyframes slideUpAndSit {
+  0% {
+    transform: translate(-50%, 250px);
+    opacity: 0;
+  }
+  75% {
+    transform: translate(-50%, 24px);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, 32px);
+  }
+}
+
+.animate-cat-sit {
+  animation: slideUpAndSit 1.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+  z-index: -1;
+}
+
+/* Sway animation for hanging sign */
+@keyframes sway {
+  0%, 100% {
+    transform: rotate(-1.8deg);
+  }
+  50% {
+    transform: rotate(1.8deg);
+  }
+}
+
+.animate-sway {
+  animation: sway 7.5s ease-in-out infinite;
+}
+
+/* Slide down entrance animation for the hanging signboard wrapper */
+@keyframes slideDownLogo {
+  0% {
+    transform: translateY(-200px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-hanging-drop {
+  animation: slideDownLogo 2.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
 }

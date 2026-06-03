@@ -50,14 +50,17 @@ export default function Signup() {
   };
 
   return (
-    <div className="w-full max-w-md px-6 py-8 sm:px-8 bg-deep-purple/60 backdrop-blur-xl border border-purple-rose/85 rounded-3xl shadow-2xl transition-all duration-300 relative z-10 font-sans">
+    <div className="w-full max-w-md px-6 py-6 bg-deep-purple/95 backdrop-blur-2xl border-t border-x border-purple-rose/85 rounded-t-[32px] rounded-b-none shadow-2xl transition-all duration-300 relative z-10 font-sans pb-10 animate-in slide-in-from-bottom duration-300 overflow-visible">
+      {/* Sitting Cat Mascot */}
+      <img 
+        src={(password || confirmPassword) ? "/eyesclosed-cat.png" : email ? "/happy-cat.png" : "/cat.png"} 
+        alt="Mascot" 
+        className="absolute bottom-full left-1/2 w-36 h-auto pointer-events-none select-none animate-cat-sit" 
+      />
+
       {/* Header */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-pink to-peach-orange text-dark-navy font-black text-2xl mb-4 shadow-lg shadow-rose-pink/15">
-          HK
-        </div>
-        <h2 className="text-2xl font-black text-white tracking-tight">Create Account</h2>
-        <p className="text-light-blush/60 text-xs mt-1.5">Sign up to start tracking your finances</p>
+      <div className="text-center mb-6">
+        <p className="text-light-blush/80 text-xs font-bold uppercase tracking-wider">Join HisabKitab</p>
       </div>
 
       {error && (

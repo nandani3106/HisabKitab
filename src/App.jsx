@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Sun, Moon } from 'lucide-react';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import Home from './components/Home';
@@ -62,9 +63,28 @@ function AppContent() {
   const { currentUser, loading, logout } = useContext(AuthContext);
   const [blocks, setBlocks] = useState([]);
   const [blocksLoading, setBlocksLoading] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('hk_theme') || 'dark';
+  });
   
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === 'dark') {
+      root.classList.remove('light');
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+      root.classList.add('light');
+    }
+    localStorage.setItem('hk_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   const handleLogout = () => {
     logout();
@@ -260,11 +280,12 @@ function AppContent() {
   // Date formatting variables
   const today = new Date();
   const isAuthPath = location.pathname === '/login' || location.pathname === '/signup';
+  const isSignupPath = location.pathname === '/signup';
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-dark-navy flex items-center justify-center font-sans">
-        <div className="text-peach-orange font-bold text-sm animate-pulse uppercase tracking-widest">
+      <div className="min-h-screen plank-wall flex items-center justify-center font-sans">
+        <div className="text-white font-bold text-sm animate-pulse uppercase tracking-widest drop-shadow-[0_1.5px_1.5px_rgba(0,0,0,0.85)]">
           Loading HisabKitab...
         </div>
       </div>
@@ -272,17 +293,19 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-navy text-light-blush flex flex-col justify-start items-center relative overflow-hidden font-sans pt-6 pb-28 px-4">
-      {/* Background glowing gradients */}
-      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-rose-pink/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-rose-pink/10 rounded-full blur-[120px] pointer-events-none" />
+    <div className={`min-h-screen w-full plank-wall text-light-blush flex flex-col justify-start items-center relative overflow-hidden font-sans pt-0 px-0 ${isAuthPath ? 'pb-0' : 'pb-28'}`}>
 
-      {/* Floating Coins Background for Login/Signup */}
-      {isAuthPath && <FloatingCoins />}
+      {/* Background glowing gradients */}
+      {!isAuthPath && (
+        <>
+          <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-rose-pink/5 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-rose-pink/10 rounded-full blur-[120px] pointer-events-none" />
+        </>
+      )}
 
       {/* Top Header - Logo and Dynamic Calendar Card Icon */}
       {currentUser && (
-        <header className="w-full max-w-md mb-6 flex justify-between items-center bg-deep-purple/45 backdrop-blur-xl px-4 py-2.5 border border-purple-rose/85 rounded-3xl shadow-xl z-20">
+        <header className="w-full mb-6 mt-0 flex justify-between items-center bg-deep-purple/90 backdrop-blur-xl px-6 py-2.5 border-b border-purple-rose/85 rounded-none shadow-xl z-20">
           {/* Logo & Branding */}
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 bg-gradient-to-tr from-rose-pink to-peach-orange text-dark-navy rounded-xl flex items-center justify-center font-black text-lg shadow-lg shadow-rose-pink/15">
@@ -311,8 +334,37 @@ function AppContent() {
         </header>
       )}
 
+      {/* Hanging HK Logo Signboard */}
+      {isAuthPath && (
+        <div className="absolute top-0 left-0 right-0 w-full flex justify-center pointer-events-none select-none z-20 animate-hanging-drop">
+          <div className="flex flex-col items-center origin-top animate-sway" style={{ filter: 'drop-shadow(0 25px 12px rgba(0, 0, 0, 0.45))' }}>
+            {/* Two Hanging Wires */}
+            <div className={`flex relative transition-all duration-300 ${isSignupPath ? 'gap-10' : 'gap-12'}`}>
+              <div className={`w-[1.5px] bg-black transition-all duration-300 ${isSignupPath ? 'h-8' : 'h-16'}`} />
+              <div className={`w-[1.5px] bg-black transition-all duration-300 ${isSignupPath ? 'h-8' : 'h-16'}`} />
+            </div>
+
+            {/* The Logo Board (smaller size) */}
+            <div className="w-18 h-18 bg-gradient-to-br from-deep-purple/95 to-dark-navy/95 border border-purple-rose/85 rounded-2xl flex flex-col items-center justify-center p-1.5 -mt-0.5 relative">
+              {/* Metal ring connectors */}
+              <div className="absolute -top-1 left-3.5 w-2 h-2 rounded-full border border-purple-rose/85 bg-dark-navy flex items-center justify-center">
+                <div className="w-0.5 h-0.5 rounded-full bg-purple-rose/45" />
+              </div>
+              <div className="absolute -top-1 right-3.5 w-2 h-2 rounded-full border border-purple-rose/85 bg-dark-navy flex items-center justify-center">
+                <div className="w-0.5 h-0.5 rounded-full bg-purple-rose/45" />
+              </div>
+
+              {/* Simple HK Logo (increased size) */}
+              <div className="w-14 h-14 bg-gradient-to-tr from-rose-pink to-peach-orange text-dark-navy rounded-xl flex items-center justify-center font-black text-2xl shadow-lg shadow-rose-pink/15">
+                HK
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content Router */}
-      <div className="w-full max-w-md flex justify-center z-10 flex-1">
+      <div className={`w-full max-w-md flex justify-center z-10 flex-1 ${isAuthPath ? 'items-end px-0' : 'items-start px-4'}`}>
         {blocksLoading && blocks.length === 0 ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-peach-orange font-bold text-xs animate-pulse uppercase tracking-wider">
@@ -323,20 +375,12 @@ function AppContent() {
           <Routes>
             <Route 
               path="/login" 
-              element={
-                <div className="w-full flex justify-center items-center py-6">
-                  <Login />
-                </div>
-              } 
+              element={<Login />} 
             />
             
             <Route 
               path="/signup" 
-              element={
-                <div className="w-full flex justify-center items-center py-6">
-                  <Signup />
-                </div>
-              } 
+              element={<Signup />} 
             />
 
             <Route 

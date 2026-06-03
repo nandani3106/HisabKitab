@@ -262,29 +262,6 @@ export default function Home({ blocks, onAddBlock, onUpdateBlock, onDeleteBlock 
         </form>
       )}
 
-      {/* Search Bar */}
-      {blocks.length > 0 && (
-        <div className="relative w-full">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-light-blush/40">
-            <Search className="w-4 h-4" />
-          </div>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search blocks by name..."
-            className="w-full bg-deep-purple/40 border border-purple-rose/85 rounded-2xl pl-10 pr-10 py-2.5 text-white text-xs font-semibold placeholder:text-light-blush/30 focus:outline-none focus:border-rose-pink transition-all shadow-md"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-light-blush/40 hover:text-white transition-colors cursor-pointer"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
-      )}
 
       {/* Grid of Blocks */}
       {blocks.length === 0 ? (
@@ -311,9 +288,8 @@ export default function Home({ blocks, onAddBlock, onUpdateBlock, onDeleteBlock 
                 <form
                   key={block.id}
                   onSubmit={(e) => handleEditSubmit(e, block.id)}
-                  className="bg-deep-purple/60 border border-rose-pink/60 rounded-3xl p-4 shadow-xl flex flex-col justify-between relative overflow-hidden space-y-3 animate-in zoom-in-95 duration-200"
+                  className="wooden-board brightness-110 p-4 shadow-2xl flex flex-col justify-between relative overflow-hidden space-y-3 animate-in zoom-in-95 duration-200"
                 >
-                  <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${colorStyles.fill} opacity-60`} />
 
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
@@ -404,21 +380,20 @@ export default function Home({ blocks, onAddBlock, onUpdateBlock, onDeleteBlock 
             return (
               <div
                 key={block.id}
-                className="bg-deep-purple/40 border border-purple-rose/85 rounded-3xl p-4 shadow flex flex-col justify-between transition-all group duration-300 hover:shadow-lg hover:border-purple-rose relative overflow-hidden"
+                className="wooden-board p-4 flex flex-col justify-between transition-all group duration-300 hover:scale-[1.03] hover:shadow-2xl relative overflow-hidden"
               >
-                <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${colorStyles.fill} opacity-60`} />
 
                 <div>
                   <div className="flex justify-between items-start mb-3">
                     {getModeBadge(block.mode)}
                     
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 z-20">
                       <button
                         onClick={(e) => {
                           e.preventDefault();
                           startEdit(block);
                         }}
-                        className="p-1 text-light-blush/40 hover:text-peach-orange hover:bg-dark-navy rounded-lg transition-all md:opacity-0 group-hover:opacity-100 cursor-pointer"
+                        className="p-1 text-white/50 hover:text-white hover:bg-black/35 rounded-lg transition-all md:opacity-0 group-hover:opacity-100 cursor-pointer"
                         title="Edit Block"
                       >
                         <Pencil className="w-3 h-3" />
@@ -428,7 +403,7 @@ export default function Home({ blocks, onAddBlock, onUpdateBlock, onDeleteBlock 
                           e.preventDefault();
                           onDeleteBlock(block.id);
                         }}
-                        className="p-1 text-light-blush/40 hover:text-rose-pink hover:bg-dark-navy rounded-lg transition-all md:opacity-0 group-hover:opacity-100 cursor-pointer"
+                        className="p-1 text-white/50 hover:text-red-400 hover:bg-black/35 rounded-lg transition-all md:opacity-0 group-hover:opacity-100 cursor-pointer"
                         title="Delete Block"
                       >
                         <Trash2 className="w-3 h-3" />
@@ -438,26 +413,26 @@ export default function Home({ blocks, onAddBlock, onUpdateBlock, onDeleteBlock 
 
                   <Link
                     to={`/block/${block.id}`}
-                    className="block group-hover:text-rose-pink transition-colors"
+                    className="block group-hover:brightness-110 transition-all z-10 relative"
                   >
-                    <h3 className="text-sm font-black text-white hover:text-rose-pink truncate">
+                    <h3 className="text-sm font-black text-white hover:text-white truncate">
                       {block.name}
                     </h3>
                   </Link>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-purple-rose/40 space-y-1.5 text-xs">
-                  <div className="flex justify-between items-center text-light-blush/75 font-semibold">
+                <div className="mt-4 pt-3 border-t border-black/20 space-y-1.5 text-xs">
+                  <div className="flex justify-between items-center text-[#C0CDE6] font-semibold">
                     <span>Online:</span>
                     <span className="font-extrabold text-white">₹{balances.online.toLocaleString('en-IN')}</span>
                   </div>
-                  <div className="flex justify-between items-center text-light-blush/75 font-semibold">
+                  <div className="flex justify-between items-center text-[#C0CDE6] font-semibold">
                     <span>Offline:</span>
                     <span className="font-extrabold text-white">₹{balances.offline.toLocaleString('en-IN')}</span>
                   </div>
-                  <div className="flex justify-between items-center text-light-blush font-black border-t border-purple-rose/30 pt-2 mt-2 text-sm">
+                  <div className="flex justify-between items-center text-[#FAFDFD] font-black border-t border-black/25 pt-2 mt-2 text-sm">
                     <span className="uppercase tracking-wider">Total:</span>
-                    <span className="text-peach-orange">₹{balances.total.toLocaleString('en-IN')}</span>
+                    <span className="text-[#ABC4E6] font-extrabold">₹{balances.total.toLocaleString('en-IN')}</span>
                   </div>
                 </div>
               </div>
