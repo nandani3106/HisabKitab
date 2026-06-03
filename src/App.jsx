@@ -9,7 +9,18 @@ import History from './components/History';
 import Profile from './components/Profile';
 import BottomNavbar from './components/BottomNavbar';
 import { AuthContext, AuthProvider } from './context/AuthContext';
-import api from './services/api';
+import { 
+  collection, 
+  query, 
+  where, 
+  getDocs, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc, 
+  writeBatch 
+} from 'firebase/firestore';
+import { db } from './services/firebase';
 
 function FloatingCoins() {
   const [coins] = useState(() => {
@@ -60,53 +71,52 @@ function AppContent() {
     navigate('/login');
   };
 
-  // Fetch blocks and their transactions from backend
+  // Fetch blocks and their transactions from Firestore
   const fetchBlocksAndTransactions = useCallback(async () => {
     if (!currentUser) return;
     setBlocksLoading(true);
     try {
-      const response = await api.get('/blocks');
-      if (response.data && response.data.success) {
-        const blocksList = response.data.blocks;
+      // Fetch blocks
+      const blocksQuery = query(collection(db, 'blocks'), where('userId', '==', currentUser.id));
+      const blocksSnap = await getDocs(blocksQuery);
+      const blocksList = blocksSnap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data()
+      }));
 
-        // Fetch transactions for each block
-        const blocksWithTxs = await Promise.all(
-          blocksList.map(async (block) => {
-            try {
-              const txsRes = await api.get(`/transactions/block/${block._id}`);
-              const transactionsList = txsRes.data && txsRes.data.success ? txsRes.data.transactions : [];
-              return {
-                id: block._id,
-                name: block.name,
-                mode: block.mode,
-                color: block.color,
-                balance: block.balance,
-                transactions: transactionsList.map((t) => ({
-                  id: t._id,
-                  amount: t.amount,
-                  description: t.description,
-                  date: t.date ? t.date.split('T')[0] : '',
-                  mode: t.mode
-                }))
-              };
-            } catch (err) {
-              console.error(`Error fetching transactions for block ${block._id}:`, err);
-              return {
-                id: block._id,
-                name: block.name,
-                mode: block.mode,
-                color: block.color,
-                balance: block.balance,
-                transactions: []
-              };
-            }
-          })
-        );
+      // Fetch transactions
+      const txQuery = query(collection(db, 'transactions'), where('userId', '==', currentUser.id));
+      const txSnap = await getDocs(txQuery);
+      const transactionsList = txSnap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data()
+      }));
 
-        setBlocks(blocksWithTxs);
-      }
+      // Group in memory
+      const blocksWithTxs = blocksList.map((block) => {
+        const blockTxs = transactionsList
+          .filter((t) => t.blockId === block.id)
+          .map((t) => ({
+            id: t.id,
+            amount: t.amount,
+            description: t.description,
+            date: t.date,
+            mode: t.mode
+          }));
+
+        return {
+          id: block.id,
+          name: block.name,
+          mode: block.mode || 'both',
+          color: block.color || 'rosePink',
+          balance: block.balance || 0,
+          transactions: blockTxs
+        };
+      });
+
+      setBlocks(blocksWithTxs);
     } catch (error) {
-      console.error('Error loading blocks from backend:', error);
+      console.error('Error loading blocks from Firestore:', error);
     } finally {
       setBlocksLoading(false);
     }
@@ -138,91 +148,101 @@ function AppContent() {
     }
   }, [currentUser, fetchBlocksAndTransactions]);
 
-  // Block handlers using backend API
+  // Block handlers using Firestore
   const handleAddBlock = async (newBlockData) => {
     try {
-      const response = await api.post('/blocks', {
+      await addDoc(collection(db, 'blocks'), {
+        userId: currentUser.id,
         name: newBlockData.name,
-        mode: newBlockData.mode,
-        color: newBlockData.color,
-        balance: newBlockData.balance
+        mode: newBlockData.mode || 'both',
+        color: newBlockData.color || 'rosePink',
+        balance: Number(newBlockData.balance) || 0,
+        createdAt: new Date().toISOString()
       });
-      if (response.data && response.data.success) {
-        await fetchBlocksAndTransactions();
-      }
+      await fetchBlocksAndTransactions();
     } catch (error) {
-      console.error('Error creating block on backend:', error);
+      console.error('Error creating block on Firestore:', error);
     }
   };
 
   const handleUpdateBlock = async (blockId, updatedData) => {
     try {
-      const response = await api.put(`/blocks/${blockId}`, {
+      const blockRef = doc(db, 'blocks', blockId);
+      await updateDoc(blockRef, {
         name: updatedData.name,
         mode: updatedData.mode,
         color: updatedData.color,
-        balance: updatedData.balance
+        balance: Number(updatedData.balance) || 0,
+        updatedAt: new Date().toISOString()
       });
-      if (response.data && response.data.success) {
-        await fetchBlocksAndTransactions();
-      }
+      await fetchBlocksAndTransactions();
     } catch (error) {
-      console.error('Error updating block on backend:', error);
+      console.error('Error updating block on Firestore:', error);
     }
   };
 
   const handleDeleteBlock = async (blockId) => {
     try {
-      const response = await api.delete(`/blocks/${blockId}`);
-      if (response.data && response.data.success) {
-        await fetchBlocksAndTransactions();
-      }
+      await deleteDoc(doc(db, 'blocks', blockId));
+      
+      // Delete all related transactions
+      const txQuery = query(
+        collection(db, 'transactions'),
+        where('blockId', '==', blockId),
+        where('userId', '==', currentUser.id)
+      );
+      const txSnap = await getDocs(txQuery);
+      const batch = writeBatch(db);
+      txSnap.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+      await batch.commit();
+
+      await fetchBlocksAndTransactions();
     } catch (error) {
-      console.error('Error deleting block on backend:', error);
+      console.error('Error deleting block on Firestore:', error);
     }
   };
 
   const handleAddTransaction = async (blockId, newTxData) => {
     try {
-      const response = await api.post('/transactions', {
+      await addDoc(collection(db, 'transactions'), {
+        userId: currentUser.id,
         blockId,
         amount: Number(newTxData.amount),
         description: newTxData.description,
         date: newTxData.date,
-        mode: newTxData.mode
+        mode: newTxData.mode,
+        createdAt: new Date().toISOString()
       });
-      if (response.data && response.data.success) {
-        await fetchBlocksAndTransactions();
-      }
+      await fetchBlocksAndTransactions();
     } catch (error) {
-      console.error('Error adding transaction on backend:', error);
+      console.error('Error adding transaction on Firestore:', error);
     }
   };
 
   const handleUpdateTransaction = async (blockId, txId, updatedData) => {
     try {
-      const response = await api.put(`/transactions/${txId}`, {
+      const txRef = doc(db, 'transactions', txId);
+      await updateDoc(txRef, {
         amount: Number(updatedData.amount),
         description: updatedData.description,
         date: updatedData.date,
-        mode: updatedData.mode
+        mode: updatedData.mode,
+        updatedAt: new Date().toISOString()
       });
-      if (response.data && response.data.success) {
-        await fetchBlocksAndTransactions();
-      }
+      await fetchBlocksAndTransactions();
     } catch (error) {
-      console.error('Error updating transaction on backend:', error);
+      console.error('Error updating transaction on Firestore:', error);
     }
   };
 
   const handleDeleteTransaction = async (blockId, txId) => {
     try {
-      const response = await api.delete(`/transactions/${txId}`);
-      if (response.data && response.data.success) {
-        await fetchBlocksAndTransactions();
-      }
+      await deleteDoc(doc(db, 'transactions', txId));
+      await fetchBlocksAndTransactions();
     } catch (error) {
-      console.error('Error deleting transaction on backend:', error);
+      console.error('Error deleting transaction on Firestore:', error);
     }
   };
 

@@ -1,5 +1,12 @@
 import { createContext, useState, useEffect } from 'react';
-import api from '../services/api';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged,
+  updateProfile 
+} from 'firebase/auth';
+import { auth } from '../services/firebase';
 
 export const AuthContext = createContext();
 
@@ -7,66 +14,77 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check for stored token and fetch user details on load
-  useEffect(() => {
-    const checkUserSession = async () => {
-      const token = localStorage.getItem('hk_token');
-      if (token) {
-        try {
-          const response = await api.get('/auth/me');
-          if (response.data && response.data.success) {
-            setCurrentUser(response.data.user);
-          } else {
-            // Invalid response, clear session
-            localStorage.removeItem('hk_token');
-            setCurrentUser(null);
-          }
-        } catch (error) {
-          console.error('Session verification failed:', error);
-          localStorage.removeItem('hk_token');
-          setCurrentUser(null);
-        }
-      }
-      setLoading(false);
+  // Helper to format firebase user object
+  const formatUser = (user) => {
+    if (!user) return null;
+    return {
+      id: user.uid,
+      name: user.displayName || user.email.split('@')[0],
+      email: user.email,
     };
+  };
 
-    checkUserSession();
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(formatUser(user));
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const login = async (email, password) => {
     try {
-      const response = await api.post('/auth/login', { email, password });
-      if (response.data && response.data.success) {
-        const { token, user } = response.data;
-        localStorage.setItem('hk_token', token);
-        setCurrentUser(user);
-        return { success: true };
-      }
-      return { success: false, message: response.data?.message || 'Login failed' };
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      setCurrentUser(formatUser(userCredential.user));
+      return { success: true };
     } catch (error) {
-      console.error('Login error:', error);
-      const message = error.response?.data?.message || 'Login failed. Please check credentials.';
+      console.error('Firebase Login error:', error);
+      let message = 'Login failed. Please check credentials.';
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        message = 'Invalid email or password.';
+      } else if (error.code === 'auth/invalid-email') {
+        message = 'Invalid email address format.';
+      }
       return { success: false, message };
     }
   };
 
   const register = async (name, email, password) => {
     try {
-      const response = await api.post('/auth/register', { name, email, password });
-      if (response.data && response.data.success) {
-        return { success: true };
-      }
-      return { success: false, message: response.data?.message || 'Registration failed' };
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // Update display name
+      await updateProfile(userCredential.user, { displayName: name });
+      
+      // Update local state with the user object containing display name
+      setCurrentUser({
+        id: userCredential.user.uid,
+        name: name,
+        email: userCredential.user.email
+      });
+      
+      return { success: true };
     } catch (error) {
-      console.error('Registration error:', error);
-      const message = error.response?.data?.message || 'Registration failed. Try again.';
+      console.error('Firebase Registration error:', error);
+      let message = 'Registration failed. Try again.';
+      if (error.code === 'auth/email-already-in-use') {
+        message = 'This email is already registered.';
+      } else if (error.code === 'auth/weak-password') {
+        message = 'Password should be at least 6 characters.';
+      } else if (error.code === 'auth/invalid-email') {
+        message = 'Invalid email address format.';
+      }
       return { success: false, message };
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('hk_token');
-    setCurrentUser(null);
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      setCurrentUser(null);
+    } catch (error) {
+      console.error('Firebase Logout error:', error);
+    }
   };
 
   return (
