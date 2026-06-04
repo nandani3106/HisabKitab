@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext, useCallback } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation, Link } from 'react-router-dom';
 import { Sun, Moon } from 'lucide-react';
 import Login from './components/Login';
 import Signup from './components/Signup';
@@ -22,6 +22,20 @@ import {
   writeBatch 
 } from 'firebase/firestore';
 import { db } from './services/firebase';
+import { registerSW } from 'virtual:pwa-register';
+
+// Register service worker if supported
+if ('serviceWorker' in navigator) {
+  registerSW({
+    onNeedRefresh() {
+      // Show dynamic popup or let it auto update
+    },
+    onOfflineReady() {
+      console.log('App offline ready');
+    },
+  });
+}
+
 
 function FloatingCoins() {
   const [coins] = useState(() => {
@@ -295,6 +309,27 @@ function AppContent() {
   return (
     <div className={`min-h-screen w-full plank-wall text-light-blush flex flex-col justify-start items-center relative overflow-hidden font-sans pt-0 px-0 ${isAuthPath ? 'pb-0' : 'pb-28'}`}>
 
+      {/* Top Right Navigation Buttons */}
+      {isAuthPath && (
+        <div className="absolute top-5 right-5 z-30">
+          {location.pathname === '/login' ? (
+            <Link
+              to="/signup"
+              className="bg-deep-purple/95 backdrop-blur-md border border-purple-rose/85 text-peach-orange hover:text-white hover:border-peach-orange/80 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 shadow-lg cursor-pointer inline-block"
+            >
+              Sign Up
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="bg-deep-purple/95 backdrop-blur-md border border-purple-rose/85 text-peach-orange hover:text-white hover:border-peach-orange/80 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 shadow-lg cursor-pointer inline-block"
+            >
+              Sign In
+            </Link>
+          )}
+        </div>
+      )}
+
       {/* Background glowing gradients */}
       {!isAuthPath && (
         <>
@@ -340,8 +375,8 @@ function AppContent() {
           <div className="flex flex-col items-center origin-top animate-sway" style={{ filter: 'drop-shadow(0 25px 12px rgba(0, 0, 0, 0.45))' }}>
             {/* Two Hanging Wires */}
             <div className={`flex relative transition-all duration-300 ${isSignupPath ? 'gap-10' : 'gap-12'}`}>
-              <div className={`w-[1.5px] bg-black transition-all duration-300 ${isSignupPath ? 'h-8' : 'h-16'}`} />
-              <div className={`w-[1.5px] bg-black transition-all duration-300 ${isSignupPath ? 'h-8' : 'h-16'}`} />
+              <div className={`w-[1.5px] bg-black transition-all duration-300 ${isSignupPath ? 'h-20' : 'h-32'}`} />
+              <div className={`w-[1.5px] bg-black transition-all duration-300 ${isSignupPath ? 'h-20' : 'h-32'}`} />
             </div>
 
             {/* The Logo Board (smaller size) */}
