@@ -2,8 +2,9 @@ import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import usePWAInstall from '../hooks/usePWAInstall';
+import { translations } from '../utils/translations';
 
-export default function Login() {
+export default function Login({ language = 'en' }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -16,7 +17,7 @@ export default function Login() {
   const handleInstall = async () => {
     const result = await triggerInstall();
     if (result.success) {
-      setSuccess('HisabKitab installed successfully!');
+      setSuccess(language === 'en' ? 'HisabKitab installed successfully!' : 'हिसाबकिताब सफलतापूर्वक इंस्टॉल हो गया!');
       setTimeout(() => setSuccess(''), 5000);
     }
   };
@@ -26,7 +27,7 @@ export default function Login() {
     setError('');
 
     if (!email || !password) {
-      setError('Please fill in all fields.');
+      setError(language === 'en' ? 'Please fill in all fields.' : 'कृपया सभी फ़ील्ड भरें।');
       return;
     }
 
@@ -52,7 +53,9 @@ export default function Login() {
 
       {/* Header */}
       <div className="text-center mb-3.5">
-        <p className="text-light-blush/80 text-[10px] font-bold uppercase tracking-wider">Sign in to HisabKitab</p>
+        <p className="text-light-blush/80 text-[10px] font-bold uppercase tracking-wider">
+          {translations[language]?.loginTitle || "Welcome to HisabKitab"}
+        </p>
       </div>
 
       {success && (
@@ -71,7 +74,7 @@ export default function Login() {
       <form onSubmit={handleSubmit} className="space-y-2.5">
         <div>
           <label className="block text-light-blush text-[9px] font-bold uppercase tracking-wider mb-0.5">
-            Email Address
+            {translations[language]?.emailLabel || "Email Address"}
           </label>
           <input
             type="email"
@@ -86,7 +89,7 @@ export default function Login() {
 
         <div>
           <label className="block text-light-blush text-[9px] font-bold uppercase tracking-wider mb-0.5">
-            Password
+            {translations[language]?.passwordLabel || "Password"}
           </label>
           <input
             type="password"
@@ -104,7 +107,7 @@ export default function Login() {
           disabled={loading}
           className="w-full bg-gradient-to-r from-rose-pink to-peach-orange hover:opacity-90 text-dark-navy font-extrabold py-2.5 px-4 rounded-xl shadow-lg shadow-rose-pink/10 active:scale-[0.98] transition-all duration-300 text-xs uppercase tracking-wider mt-1.5 cursor-pointer disabled:opacity-50"
         >
-          {loading ? 'Signing In...' : 'Sign In'}
+          {loading ? (language === 'en' ? 'Signing In...' : 'साइन इन किया जा रहा है...') : (translations[language]?.loginBtn || 'Sign In')}
         </button>
       </form>
 
@@ -136,9 +139,13 @@ export default function Login() {
                   </div>
                 </div>
               </div>
-              <h3 className="text-lg font-black text-white tracking-tight">Install HisabKitab</h3>
+              <h3 className="text-lg font-black text-white tracking-tight">
+                {language === 'en' ? 'Install HisabKitab' : 'हिसाबकिताब इंस्टॉल करें'}
+              </h3>
               <p className="text-light-blush/70 text-xs leading-relaxed">
-                Install HisabKitab on your device for faster access and a better app experience.
+                {language === 'en' 
+                  ? 'Install HisabKitab on your device for faster access and a better app experience.' 
+                  : 'बेहतर अनुभव और तेज़ एक्सेस के लिए अपने डिवाइस पर हिसाबकिताब इंस्टॉल करें।'}
               </p>
             </div>
 
@@ -147,13 +154,13 @@ export default function Login() {
                 onClick={handleInstall}
                 className="w-full bg-gradient-to-r from-rose-pink to-peach-orange hover:opacity-90 text-dark-navy font-extrabold py-2.5 px-4 rounded-xl shadow-lg shadow-rose-pink/10 active:scale-[0.98] transition-all duration-200 text-xs uppercase tracking-wider cursor-pointer"
               >
-                Install Now
+                {language === 'en' ? 'Install Now' : 'अभी इंस्टॉल करें'}
               </button>
               <button
                 onClick={dismissPrompt}
                 className="w-full bg-dark-navy/60 hover:bg-dark-navy/80 border border-purple-rose/50 text-light-blush font-extrabold py-2.5 px-4 rounded-xl active:scale-[0.98] transition-all duration-200 text-xs uppercase tracking-wider cursor-pointer"
               >
-                Maybe Later
+                {language === 'en' ? 'Maybe Later' : 'बाद में'}
               </button>
             </div>
           </div>

@@ -1,8 +1,9 @@
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { translations } from '../utils/translations';
 
-export default function Signup() {
+export default function Signup({ language = 'en' }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,17 +18,17 @@ export default function Signup() {
     setError('');
 
     if (!name || !email || !password || !confirmPassword) {
-      setError('Please fill in all fields.');
+      setError(language === 'en' ? 'Please fill in all fields.' : 'कृपया सभी फ़ील्ड भरें।');
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError(language === 'en' ? 'Passwords do not match.' : 'पासवर्ड मेल नहीं खाते हैं।');
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+      setError(language === 'en' ? 'Password must be at least 6 characters long.' : 'पासवर्ड कम से कम 6 अक्षरों का होना चाहिए।');
       return;
     }
 
@@ -41,7 +42,9 @@ export default function Signup() {
       if (loginResult.success) {
         navigate('/');
       } else {
-        setError('Registered successfully, but auto-login failed. Please sign in manually.');
+        setError(language === 'en' 
+          ? 'Registered successfully, but auto-login failed. Please sign in manually.' 
+          : 'सफलतापूर्वक पंजीकरण हो गया, लेकिन ऑटो-लॉगिन विफल रहा। कृपया मैन्युअल रूप से साइन इन करें।');
       }
     } else {
       setLoading(false);
@@ -60,7 +63,9 @@ export default function Signup() {
 
       {/* Header */}
       <div className="text-center mb-3.5">
-        <p className="text-light-blush/80 text-[10px] font-bold uppercase tracking-wider">Join HisabKitab</p>
+        <p className="text-light-blush/80 text-[10px] font-bold uppercase tracking-wider">
+          {translations[language]?.signupSubtitle || "Sign up to start tracking ledgers"}
+        </p>
       </div>
 
       {error && (
@@ -73,7 +78,7 @@ export default function Signup() {
       <form onSubmit={handleSubmit} className="space-y-2.5">
         <div>
           <label className="block text-light-blush text-[9px] font-bold uppercase tracking-wider mb-0.5">
-            Full Name
+            {translations[language]?.nameLabel || "Full Name"}
           </label>
           <input
             type="text"
@@ -88,7 +93,7 @@ export default function Signup() {
 
         <div>
           <label className="block text-light-blush text-[9px] font-bold uppercase tracking-wider mb-0.5">
-            Email Address
+            {translations[language]?.emailLabel || "Email Address"}
           </label>
           <input
             type="email"
@@ -103,7 +108,7 @@ export default function Signup() {
 
         <div>
           <label className="block text-light-blush text-[9px] font-bold uppercase tracking-wider mb-0.5">
-            Password
+            {translations[language]?.passwordLabel || "Password"}
           </label>
           <input
             type="password"
@@ -118,7 +123,7 @@ export default function Signup() {
 
         <div>
           <label className="block text-light-blush text-[9px] font-bold uppercase tracking-wider mb-0.5">
-            Confirm Password
+            {language === 'en' ? 'Confirm Password' : 'पासवर्ड की पुष्टि करें'}
           </label>
           <input
             type="password"
@@ -136,7 +141,7 @@ export default function Signup() {
           disabled={loading}
           className="w-full bg-gradient-to-r from-rose-pink to-peach-orange hover:opacity-90 text-dark-navy font-extrabold py-2.5 px-4 rounded-xl shadow-lg shadow-rose-pink/10 active:scale-[0.98] transition-all duration-300 text-xs uppercase tracking-wider mt-1.5 cursor-pointer disabled:opacity-50"
         >
-          {loading ? 'Creating...' : 'Sign Up'}
+          {loading ? (language === 'en' ? 'Creating...' : 'खाता बनाया जा रहा है...') : (translations[language]?.signupBtn || 'Register Now')}
         </button>
       </form>
     </div>

@@ -1,14 +1,15 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LogOut, User, Layers, BarChart3, History } from 'lucide-react';
+import { LogOut, User, Layers, BarChart3, History as HistoryIcon } from 'lucide-react';
+import { translations } from '../utils/translations';
 
-export default function BottomNavbar({ onLogout }) {
+export default function BottomNavbar({ onLogout, language = 'en' }) {
   const location = useLocation();
 
   const navItems = [
-    { label: 'Blocks', icon: Layers, path: '/' },
-    { label: 'Analytics', icon: BarChart3, path: '/analytics' },
-    { label: 'History', icon: History, path: '/history' },
-    { label: 'Profile', icon: User, path: '/profile' },
+    { label: translations[language]?.home || 'Home', icon: Layers, path: '/' },
+    { label: translations[language]?.analytics || 'Analytics', icon: BarChart3, path: '/analytics' },
+    { label: translations[language]?.history || 'History', icon: HistoryIcon, path: '/history' },
+    { label: translations[language]?.profile || 'Profile', icon: User, path: '/profile' },
   ];
 
   return (
@@ -22,7 +23,7 @@ export default function BottomNavbar({ onLogout }) {
 
         return (
           <Link
-            key={item.label}
+            key={item.path}
             to={item.path}
             className={`flex flex-col items-center gap-1 transition-all duration-300 ${
               isActive 
@@ -42,7 +43,7 @@ export default function BottomNavbar({ onLogout }) {
         className="flex flex-col items-center gap-1 text-light-blush/50 hover:text-rose-pink hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
       >
         <LogOut className="w-5 h-5" />
-        <span className="text-[9px] font-extrabold uppercase tracking-wider">Logout</span>
+        <span className="text-[9px] font-extrabold uppercase tracking-wider">{translations[language]?.logout || 'Logout'}</span>
       </button>
     </nav>
   );

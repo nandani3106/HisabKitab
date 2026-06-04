@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { TrendingUp, Wallet, Landmark, Calendar, BarChart2, BookOpen } from 'lucide-react';
+import { translations } from '../utils/translations';
 
-export default function Analytics({ blocks }) {
+export default function Analytics({ blocks, language = 'en' }) {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonthNum = now.getMonth();
@@ -209,22 +210,22 @@ export default function Analytics({ blocks }) {
 
   return (
     <div className="w-full max-w-md mx-auto space-y-6 pb-6 animate-in fade-in duration-300">
-      
+
       {/* Header Info */}
       <div className="bg-deep-purple/40 p-4 border border-purple-rose/85 rounded-3xl flex items-center gap-2">
         <div className="p-2 bg-rose-pink/15 text-rose-pink rounded-xl">
           <TrendingUp className="w-4 h-4" />
         </div>
         <div>
-          <h2 className="text-sm font-black text-white">Financial Analytics</h2>
-          <p className="text-[10px] text-light-blush/60">Aggregated spendings and transaction ratios</p>
+          <h2 className="text-sm font-black text-white">{translations[language]?.analyticsTitle || "Financial Analytics"}</h2>
+          <p className="text-[10px] text-light-blush/60">{language === 'en' ? 'Aggregated spendings and transaction ratios' : 'कुल खर्च और लेनदेन अनुपात'}</p>
         </div>
       </div>
 
       {/* Main Net Balance Card */}
       <div className="bg-deep-purple/60 backdrop-blur-xl border border-purple-rose/85 rounded-3xl p-5 shadow-xl text-center space-y-2 relative overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-rose-pink to-peach-orange" />
-        <span className="text-[9px] text-light-blush/50 font-bold uppercase tracking-wider">Total Net Balance (Current Month)</span>
+        <span className="text-[9px] text-light-blush/50 font-bold uppercase tracking-wider">{translations[language]?.totalNetBalance || "Total Net Balance (Current Month)"}</span>
         <h3 className="text-2xl font-black text-white">₹{netTotal.toLocaleString('en-IN')}</h3>
       </div>
 
@@ -232,7 +233,7 @@ export default function Analytics({ blocks }) {
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-deep-purple/40 border border-purple-rose/85 rounded-3xl p-4 flex flex-col justify-between">
           <div className="flex justify-between items-center mb-3">
-            <span className="text-[9px] text-light-blush/50 font-bold uppercase">Offline Pool</span>
+            <span className="text-[9px] text-light-blush/50 font-bold uppercase">{translations[language]?.offlinePool || "Offline Pool"}</span>
             <Wallet className="w-3.5 h-3.5 text-peach-orange" />
           </div>
           <span className="text-base font-black text-white">₹{offlineFinal.toLocaleString('en-IN')}</span>
@@ -240,7 +241,7 @@ export default function Analytics({ blocks }) {
 
         <div className="bg-deep-purple/40 border border-purple-rose/85 rounded-3xl p-4 flex flex-col justify-between">
           <div className="flex justify-between items-center mb-3">
-            <span className="text-[9px] text-light-blush/50 font-bold uppercase">Online Pool</span>
+            <span className="text-[9px] text-light-blush/50 font-bold uppercase">{translations[language]?.onlinePool || "Online Pool"}</span>
             <Landmark className="w-3.5 h-3.5 text-light-blush" />
           </div>
           <span className="text-base font-black text-white">₹{onlineFinal.toLocaleString('en-IN')}</span>
@@ -249,7 +250,7 @@ export default function Analytics({ blocks }) {
 
       {/* Block-wise Balance breakdown */}
       <div className="bg-deep-purple/60 backdrop-blur-xl border border-purple-rose/85 rounded-3xl p-5 shadow-xl space-y-4">
-        <h4 className="text-xs font-bold text-white uppercase tracking-wider">Blocks Balance Breakdown (Current Month)</h4>
+        <h4 className="text-xs font-bold text-white uppercase tracking-wider">{language === 'en' ? 'Blocks Balance Breakdown (Current Month)' : 'ब्लॉक-वार बैलेंस विवरण (चालू माह)'}</h4>
         <div className="grid grid-cols-2 gap-2">
           {blockBalances.map((item) => (
             <div key={item.id} className="p-2.5 bg-dark-navy/60 border border-purple-rose/65 rounded-2xl flex justify-between items-center animate-in fade-in duration-300">
@@ -270,7 +271,7 @@ export default function Analytics({ blocks }) {
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-1.5 text-white font-bold text-xs uppercase tracking-wider">
             <BarChart2 className="w-4 h-4 text-rose-pink" />
-            <span>Activity Chart</span>
+            <span>{language === 'en' ? 'Activity Chart' : 'गतिविधि चार्ट'}</span>
           </div>
 
           {/* Group Options Selection Tab */}
@@ -282,13 +283,12 @@ export default function Analytics({ blocks }) {
                   setGroupOption(opt);
                   setHoveredBar(null);
                 }}
-                className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase transition-all cursor-pointer ${
-                  groupOption === opt
+                className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase transition-all cursor-pointer ${groupOption === opt
                     ? 'bg-rose-pink/15 text-rose-pink border border-rose-pink/10'
                     : 'text-light-blush/40 hover:text-light-blush/80'
-                }`}
+                  }`}
               >
-                {opt}
+                {opt === 'day' ? (language === 'en' ? 'day' : 'दिन') : opt === 'date' ? (language === 'en' ? 'date' : 'तारीख') : opt === 'month' ? (language === 'en' ? 'month' : 'महीना') : (language === 'en' ? 'year' : 'साल')}
               </button>
             ))}
           </div>
@@ -296,7 +296,7 @@ export default function Analytics({ blocks }) {
 
         {chartData.length === 0 ? (
           <div className="text-center py-10 text-light-blush/40 text-[10px] font-bold uppercase">
-            No transaction records found to chart
+            {language === 'en' ? 'No transaction records found to chart' : 'चार्ट के लिए कोई लेनदेन रिकॉर्ड नहीं मिला'}
           </div>
         ) : (
           <div className="relative pt-2">
@@ -411,12 +411,12 @@ export default function Analytics({ blocks }) {
       <div className="bg-deep-purple/60 backdrop-blur-xl border border-purple-rose/85 rounded-3xl p-5 shadow-xl space-y-4">
         <div className="flex items-center gap-1.5 text-white font-bold text-xs uppercase tracking-wider">
           <Calendar className="w-4 h-4 text-peach-orange" />
-          <span>Monthly Comparison</span>
+          <span>{language === 'en' ? 'Monthly Comparison' : 'मासिक तुलना'}</span>
         </div>
 
         {monthComparisons.length === 0 ? (
           <div className="text-center py-6 text-light-blush/40 text-[10px] font-bold uppercase">
-            No history periods found to compare
+            {language === 'en' ? 'No history periods found to compare' : 'तुलना के लिए कोई पुराना डेटा नहीं मिला'}
           </div>
         ) : (
           <div className="space-y-3.5">
@@ -426,8 +426,8 @@ export default function Analytics({ blocks }) {
               const isReduction = c.diff < 0;
 
               return (
-                <div 
-                  key={c.month} 
+                <div
+                  key={c.month}
                   className="bg-dark-navy/40 border border-purple-rose/65 p-4 rounded-3xl space-y-3.5"
                 >
                   <div className="flex items-center gap-1.5">
@@ -439,7 +439,7 @@ export default function Analytics({ blocks }) {
 
                   <div className="grid grid-cols-2 gap-4 pt-1.5 border-t border-purple-rose/25">
                     <div className="space-y-1">
-                      <span className="text-[8px] text-light-blush/40 font-bold uppercase tracking-wider block">Total Amount</span>
+                      <span className="text-[8px] text-light-blush/40 font-bold uppercase tracking-wider block">{language === 'en' ? 'Total Amount' : 'कुल राशि'}</span>
                       <p className="text-xs font-extrabold text-white">
                         ₹{c.total.toLocaleString('en-IN')}
                       </p>
@@ -447,29 +447,29 @@ export default function Analytics({ blocks }) {
 
                     <div className="space-y-1">
                       <span className="text-[8px] text-light-blush/40 font-bold uppercase tracking-wider block">
-                        {hasPrev ? `Compared to ${c.prevMonth}` : 'Comparison'}
+                        {hasPrev ? (language === 'en' ? `Compared to ${c.prevMonth}` : `${c.prevMonth} की तुलना में`) : (language === 'en' ? 'Comparison' : 'तुलना')}
                       </span>
                       {hasPrev ? (
                         <div>
                           {isGrowth && (
                             <span className="inline-flex items-center text-[10px] font-bold text-emerald-400">
-                              ₹{c.diff.toLocaleString('en-IN')} more than last month
+                              {language === 'en' ? `₹${c.diff.toLocaleString('en-IN')} more than last month` : `पिछले महीने से ₹${c.diff.toLocaleString('en-IN')} अधिक`}
                             </span>
                           )}
                           {isReduction && (
                             <span className="inline-flex items-center text-[10px] font-bold text-orange-400">
-                              ₹{Math.abs(c.diff).toLocaleString('en-IN')} less than last month
+                              {language === 'en' ? `₹${Math.abs(c.diff).toLocaleString('en-IN')} less than last month` : `पिछले महीने से ₹${Math.abs(c.diff).toLocaleString('en-IN')} कम`}
                             </span>
                           )}
                           {c.diff === 0 && (
                             <span className="inline-flex items-center text-[10px] font-bold text-light-blush/60">
-                              Same as last month
+                              {language === 'en' ? 'Same as last month' : 'पिछले महीने जैसा ही'}
                             </span>
                           )}
                         </div>
                       ) : (
                         <span className="inline-flex items-center text-[10px] font-medium text-light-blush/40 italic">
-                          First recorded month
+                          {language === 'en' ? 'First recorded month' : 'पहला दर्ज महीना'}
                         </span>
                       )}
                     </div>
@@ -483,28 +483,28 @@ export default function Analytics({ blocks }) {
 
       {/* Fund Distribution Percentages */}
       <div className="bg-deep-purple/60 backdrop-blur-xl border border-purple-rose/85 rounded-3xl p-5 shadow-xl space-y-4">
-        <h4 className="text-xs font-bold text-white uppercase tracking-wider">Fund Distribution</h4>
-        
+        <h4 className="text-xs font-bold text-white uppercase tracking-wider">{language === 'en' ? 'Fund Distribution' : 'फंड वितरण'}</h4>
+
         <div className="space-y-2">
           <div className="w-full h-2.5 bg-dark-navy rounded-full overflow-hidden flex">
-            <div 
-              style={{ width: `${offlinePercent}%` }} 
-              className="h-full bg-peach-orange" 
+            <div
+              style={{ width: `${offlinePercent}%` }}
+              className="h-full bg-peach-orange"
             />
-            <div 
-              style={{ width: `${onlinePercent}%` }} 
-              className="h-full bg-light-blush" 
+            <div
+              style={{ width: `${onlinePercent}%` }}
+              className="h-full bg-light-blush"
             />
           </div>
 
           <div className="flex justify-between text-[10px] font-bold">
             <div className="flex items-center gap-1.5 text-peach-orange">
               <span className="w-2 h-2 bg-peach-orange rounded-full" />
-              <span>Offline: {offlinePercent}%</span>
+              <span>{language === 'en' ? `Offline: ${offlinePercent}%` : `ऑफ़लाइन: ${offlinePercent}%`}</span>
             </div>
             <div className="flex items-center gap-1.5 text-light-blush">
               <span className="w-2 h-2 bg-light-blush rounded-full" />
-              <span>Online: {onlinePercent}%</span>
+              <span>{language === 'en' ? `Online: ${onlinePercent}%` : `ऑनलाइन: ${onlinePercent}%`}</span>
             </div>
           </div>
         </div>
