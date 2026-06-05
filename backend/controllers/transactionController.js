@@ -8,7 +8,7 @@ export const createTransaction = async (req, res) => {
   try {
     const { blockId, amount, description, date, mode } = req.body;
 
-    if (!blockId || amount === undefined || !description || !date || !mode) {
+    if (!blockId || amount === undefined || !date || !mode) {
       return res.status(400).json({ message: 'Please fill in all fields' });
     }
 
@@ -26,7 +26,7 @@ export const createTransaction = async (req, res) => {
       userId: req.user._id,
       blockId,
       amount: Number(amount),
-      description,
+      description: description || '',
       date,
       mode,
     });

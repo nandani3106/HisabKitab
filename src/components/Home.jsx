@@ -732,7 +732,7 @@ export default function Home({ blocks, onAddBlock, onUpdateBlock, onDeleteBlock,
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={translations[language]?.blockNamePlaceholder || "Block/Ledger Name (e.g. Kirana, Gaurav)"}
+                placeholder={translations[language]?.blockNamePlaceholder || "Block/Ledger Name"}
                 className="w-full bg-dark-navy border border-purple-rose/65 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-rose-pink transition-all font-semibold placeholder:text-light-blush/25"
                 required
               />
@@ -1088,10 +1088,10 @@ export default function Home({ blocks, onAddBlock, onUpdateBlock, onDeleteBlock,
                       {language === 'en' ? 'Examples:' : 'उदाहरण:'}
                     </span>
                     <p className="text-[9px] text-light-blush/80 italic leading-snug">
-                      • "Gaurav ko 500 online kal kiye"
+                      • "500 online kal kiye"
                     </p>
                     <p className="text-[9px] text-light-blush/80 italic leading-snug">
-                      • "किराना पचास रुपये कैश 5 तारीख को"
+                      • "पचास रुपये कैश 5 तारीख को"
                     </p>
                     <p className="text-[9px] text-light-blush/80 italic leading-snug">
                       • "Grocery milk 150 offline 2 august ko"

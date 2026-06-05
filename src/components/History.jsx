@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { History as HistoryIcon, Calendar, WifiOff, Globe, BookOpen, Smartphone, Pencil, Trash2, Check, X } from 'lucide-react';
+import { History as HistoryIcon, Calendar, WifiOff, Globe, BookOpen, Smartphone, Pencil, Trash2, Check, X, Share2 } from 'lucide-react';
 import { translations } from '../utils/translations';
 
 export default function History({ blocks, onUpdateTransaction, onDeleteTransaction, language = 'en' }) {
@@ -45,12 +45,68 @@ export default function History({ blocks, onUpdateTransaction, onDeleteTransacti
   const [editAmount, setEditAmount] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editDate, setEditDate] = useState('');
+  const [shareFeedback, setShareFeedback] = useState('');
+
+  const handleShareReport = async (block) => {
+    if (!selectedMonth) return;
+    const [yearStr, monthStr] = selectedMonth.split('-');
+    const year = parseInt(yearStr, 10);
+    const monthNum = parseInt(monthStr, 10);
+
+    const blockTransactions = block.transactions || [];
+    const monthlyTxs = blockTransactions.filter(tx => {
+      const txDate = new Date(tx.date);
+      return txDate.getFullYear() === year && txDate.getMonth() === monthNum;
+    });
+
+    const reportData = {
+      blockName: block.name,
+      monthNum,
+      year,
+      baseBalance: Number(block.balance || 0),
+      mode: block.mode,
+      transactions: monthlyTxs.map(tx => ({
+        amount: tx.amount,
+        description: tx.description || '',
+        date: tx.date,
+        mode: tx.mode
+      }))
+    };
+
+    const jsonStr = JSON.stringify(reportData);
+    const encodedData = btoa(unescape(encodeURIComponent(jsonStr)));
+    const shareUrl = `${window.location.origin}/shared-report?data=${encodedData}`;
+
+    const successMsg = language === 'en' 
+      ? 'Expense report link copied to clipboard!' 
+      : 'खर्च रिपोर्ट लिंक क्लिपबोर्ड पर कॉपी हो गया!';
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${block.name} Expense Report`,
+          text: `Check out the expense report for ${block.name} on HisabKitab`,
+          url: shareUrl
+        });
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        setShareFeedback(successMsg);
+        setTimeout(() => setShareFeedback(''), 4000);
+      } catch (err) {
+        console.error('Clipboard copy failed:', err);
+      }
+    }
+  };
 
   const selectedExpandedBlock = blocks.find(b => b.id === expandedBlockId);
 
   const handleEditTxSubmit = (e, txId) => {
     e.preventDefault();
-    if (!editAmount || Number(editAmount) <= 0 || !editDescription.trim() || !editDate) return;
+    if (!editAmount || Number(editAmount) <= 0 || !editDate) return;
 
     const originalTx = selectedExpandedBlock?.transactions?.find(t => t.id === txId);
     onUpdateTransaction(selectedExpandedBlock.id, txId, {
@@ -261,6 +317,13 @@ export default function History({ blocks, onUpdateTransaction, onDeleteTransacti
                   <h4 className="text-xs font-black text-white uppercase tracking-wider">
                     {language === 'en' ? `${selectedExpandedBlock.name} Entries` : `${selectedExpandedBlock.name} की प्रविष्टियाँ`}
                   </h4>
+                  <button
+                    onClick={() => handleShareReport(selectedExpandedBlock)}
+                    className="p-1 text-rose-pink hover:text-white transition-colors cursor-pointer ml-1"
+                    title={language === 'en' ? 'Share Report' : 'रिपोर्ट शेयर करें'}
+                  >
+                    <Share2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
                 <button 
                   onClick={() => setExpandedBlockId(null)}
@@ -269,6 +332,15 @@ export default function History({ blocks, onUpdateTransaction, onDeleteTransacti
                   {language === 'en' ? 'Close [X]' : 'बंद करें [X]'}
                 </button>
               </div>
+
+              {shareFeedback && (
+                <div className="bg-rose-pink/15 border border-rose-pink/25 rounded-2xl p-2.5 flex justify-between items-center text-[10px] font-bold text-light-blush/90 animate-in fade-in duration-200">
+                  <span>{shareFeedback}</span>
+                  <button onClick={() => setShareFeedback('')} className="text-light-blush/40 hover:text-white p-0.5 cursor-pointer">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
 
               {/* Transaction List */}
               <div className="space-y-1.5 max-h-[300px] overflow-y-auto pr-1">
@@ -303,7 +375,6 @@ export default function History({ blocks, onUpdateTransaction, onDeleteTransacti
                           onChange={(e) => setEditDescription(e.target.value)}
                           className="col-span-5 bg-dark-navy border border-purple-rose/65 rounded-lg px-2 py-1 text-white text-[12px] font-bold focus:outline-none focus:border-rose-pink min-w-0"
                           placeholder={translations[language]?.descriptionPlaceholder || "Description"}
-                          required
                         />
 
                         {/* Date Input */}

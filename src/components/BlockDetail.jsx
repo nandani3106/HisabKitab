@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { ArrowLeft, WifiOff, Globe, Plus, Check, X, Pencil, Trash2, Mic } from 'lucide-react';
+import { ArrowLeft, WifiOff, Globe, Plus, Check, X, Pencil, Trash2, Mic, Share2 } from 'lucide-react';
 import { translations } from '../utils/translations';
 
 export default function BlockDetail({ blocks, onAddTransaction, onUpdateTransaction, onDeleteTransaction, language = 'en' }) {
@@ -98,7 +98,7 @@ export default function BlockDetail({ blocks, onAddTransaction, onUpdateTransact
   // Helper to save edited transaction
   const handleEditTxSubmit = (e, txId) => {
     e.preventDefault();
-    if (!editAmount || Number(editAmount) <= 0 || !editDescription.trim() || !editDate) return;
+    if (!editAmount || Number(editAmount) <= 0 || !editDate) return;
 
     const originalTx = blockTransactions.find(t => t.id === txId);
     onUpdateTransaction(block.id, txId, {
@@ -139,6 +139,59 @@ export default function BlockDetail({ blocks, onAddTransaction, onUpdateTransact
       return calculateTotal('offline');
     } else {
       return calculateTotal('online');
+    }
+  };
+
+  const generateShareLink = () => {
+    const monthlyTxs = blockTransactions.filter(tx => {
+      const txDate = new Date(tx.date);
+      return txDate.getFullYear() === currentYear && txDate.getMonth() === currentMonthNum;
+    });
+
+    const reportData = {
+      blockName: block.name,
+      monthNum: currentMonthNum,
+      year: currentYear,
+      baseBalance: Number(block.balance || 0),
+      mode: block.mode,
+      transactions: monthlyTxs.map(tx => ({
+        amount: tx.amount,
+        description: tx.description || '',
+        date: tx.date,
+        mode: tx.mode
+      }))
+    };
+
+    const jsonStr = JSON.stringify(reportData);
+    const encodedData = btoa(unescape(encodeURIComponent(jsonStr)));
+    return `${window.location.origin}/shared-report?data=${encodedData}`;
+  };
+
+  const handleShareReport = async () => {
+    const shareUrl = generateShareLink();
+    const successMsg = language === 'en' 
+      ? 'Expense report link copied to clipboard!' 
+      : 'खर्च रिपोर्ट लिंक क्लिपबोर्ड पर कॉपी हो गया!';
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${block.name} Expense Report`,
+          text: `Check out the expense report for ${block.name} on HisabKitab`,
+          url: shareUrl
+        });
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        setVoiceStatus('success');
+        setVoiceFeedback(successMsg);
+        setTimeout(() => setVoiceStatus('idle'), 4000);
+      } catch (err) {
+        console.error('Clipboard copy failed:', err);
+      }
     }
   };
 
@@ -563,12 +616,21 @@ export default function BlockDetail({ blocks, onAddTransaction, onUpdateTransact
           </div>
         </div>
 
-        {/* Grand Total display on the right side of the block name heading card */}
-        <div className="text-right bg-dark-navy/60 px-3.5 py-1.5 rounded-2xl border border-purple-rose/30">
-          <span className="text-[8px] font-black text-peach-orange uppercase tracking-wider block">{language === 'en' ? 'Total Balance' : 'कुल बैलेंस'}</span>
-          <span className="text-[15px] font-black text-white leading-none">
-            ₹{getBlockGrandTotal().toLocaleString('en-IN')}
-          </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleShareReport}
+            className="p-2 bg-dark-navy border border-purple-rose/65 text-rose-pink hover:text-white rounded-xl transition-colors cursor-pointer"
+            title={language === 'en' ? 'Share Report' : 'रिपोर्ट शेयर करें'}
+          >
+            <Share2 className="w-4 h-4" />
+          </button>
+          
+          <div className="text-right bg-dark-navy/60 px-3.5 py-1.5 rounded-2xl border border-purple-rose/30">
+            <span className="text-[8px] font-black text-peach-orange uppercase tracking-wider block">{language === 'en' ? 'Total Balance' : 'कुल बैलेंस'}</span>
+            <span className="text-[15px] font-black text-white leading-none">
+              ₹{getBlockGrandTotal().toLocaleString('en-IN')}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -587,7 +649,7 @@ export default function BlockDetail({ blocks, onAddTransaction, onUpdateTransact
                 : 'text-light-blush/40 hover:text-light-blush/80 cursor-pointer'
             }`}
         >
-          {language === 'en' ? 'Offline Ledger' : 'ऑफ़लाइन बही'} (₹{calculateTotal('offline').toLocaleString('en-IN')})
+          {translations[language]?.offlineLedgerTab || 'Offline'} (₹{calculateTotal('offline').toLocaleString('en-IN')})
         </button>
         <button
           disabled={block.mode === 'offline'}
@@ -602,7 +664,7 @@ export default function BlockDetail({ blocks, onAddTransaction, onUpdateTransact
                 : 'text-light-blush/40 hover:text-light-blush/80 cursor-pointer'
             }`}
         >
-          {language === 'en' ? 'Online Ledger' : 'ऑनलाइन बही'} (₹{calculateTotal('online').toLocaleString('en-IN')})
+          {translations[language]?.onlineLedgerTab || 'Online'} (₹{calculateTotal('online').toLocaleString('en-IN')})
         </button>
       </div>
 
@@ -706,7 +768,11 @@ export default function BlockDetail({ blocks, onAddTransaction, onUpdateTransact
           {voiceStatus === 'success' && (
             <div className="bg-rose-pink/15 border border-rose-pink/25 rounded-2xl p-3 flex flex-col space-y-1 animate-in fade-in duration-200">
               <div className="flex justify-between items-center">
-                <span className="text-[11px] font-black text-rose-pink uppercase tracking-wider">{language === 'en' ? 'Voice Entry Added' : 'ध्वनि प्रविष्टि जोड़ी गई'}</span>
+                <span className="text-[11px] font-black text-rose-pink uppercase tracking-wider">
+                  {voiceFeedback.includes('copied') || voiceFeedback.includes('कॉपी') 
+                    ? (language === 'en' ? 'Success' : 'सफलता') 
+                    : (language === 'en' ? 'Voice Entry Added' : 'ध्वनि प्रविष्टि जोड़ी गई')}
+                </span>
                 <button onClick={() => setVoiceStatus('idle')} className="text-light-blush/40 hover:text-white p-0.5 cursor-pointer">
                   <X className="w-4 h-4" />
                 </button>
@@ -771,7 +837,6 @@ export default function BlockDetail({ blocks, onAddTransaction, onUpdateTransact
                             onChange={(e) => setEditDescription(e.target.value)}
                             className="col-span-5 bg-dark-navy border border-purple-rose/65 rounded-lg px-2 py-1 text-white text-[13px] font-bold focus:outline-none focus:border-rose-pink min-w-0"
                             placeholder={translations[language]?.descriptionPlaceholder || "Description"}
-                            required
                           />
 
                           {/* Date Input */}
@@ -859,7 +924,7 @@ export default function BlockDetail({ blocks, onAddTransaction, onUpdateTransact
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                if (!newAmount || Number(newAmount) <= 0 || !newDescription.trim()) return;
+                if (!newAmount || Number(newAmount) <= 0) return;
                 onAddTransaction(block.id, {
                   amount: Number(newAmount),
                   description: newDescription.trim(),
@@ -888,9 +953,8 @@ export default function BlockDetail({ blocks, onAddTransaction, onUpdateTransact
                     type="text"
                     value={newDescription}
                     onChange={(e) => setNewDescription(e.target.value)}
-                    placeholder={language === 'en' ? 'Milk, bill, etc.' : 'दूध, बिल, आदि'}
+                    placeholder={translations[language]?.descriptionPlaceholder || "Description"}
                     className="w-full bg-dark-navy border border-purple-rose/65 rounded-xl px-2.5 py-2 text-white text-[13px] font-bold focus:outline-none focus:border-rose-pink"
-                    required
                   />
                 </div>
               </div>

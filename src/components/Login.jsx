@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import usePWAInstall from '../hooks/usePWAInstall';
 import { translations } from '../utils/translations';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function Login({ language = 'en' }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -91,15 +93,24 @@ export default function Login({ language = 'en' }) {
           <label className="block text-light-blush text-[9px] font-bold uppercase tracking-wider mb-0.5">
             {translations[language]?.passwordLabel || "Password"}
           </label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            className="w-full bg-dark-navy border border-purple-rose/65 rounded-xl px-3.5 py-2 text-white text-xs focus:outline-none focus:border-rose-pink focus:ring-1 focus:ring-rose-pink/30 transition-all placeholder:text-light-blush/30 font-medium"
-            required
-            disabled={loading}
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full bg-dark-navy border border-purple-rose/65 rounded-xl pl-3.5 pr-10 py-2 text-white text-xs focus:outline-none focus:border-rose-pink focus:ring-1 focus:ring-rose-pink/30 transition-all placeholder:text-light-blush/30 font-medium"
+              required
+              disabled={loading}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-light-blush/50 hover:text-white transition-colors cursor-pointer"
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
 
         <button

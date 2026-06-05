@@ -9,6 +9,7 @@ import Analytics from './components/Analytics';
 import History from './components/History';
 import Profile from './components/Profile';
 import BottomNavbar from './components/BottomNavbar';
+import SharedReport from './components/SharedReport';
 import { AuthContext, AuthProvider } from './context/AuthContext';
 import { translations } from './utils/translations';
 import { 
@@ -506,6 +507,11 @@ function AppContent() {
               />
 
               <Route 
+                path="/shared-report" 
+                element={<SharedReport />} 
+              />
+
+              <Route 
                 path="/" 
                 element={
                   currentUser ? (
@@ -584,7 +590,7 @@ function AppContent() {
         </div>
 
         {/* Bottom Fixed Navigation Bar */}
-        {currentUser && (
+        {currentUser && location.pathname !== '/shared-report' && (
           <BottomNavbar onLogout={handleLogout} language={language} />
         )}
       </div>
